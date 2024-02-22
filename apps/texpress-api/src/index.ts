@@ -8,6 +8,7 @@ import * as controllers from '@api/controllers';
 import { ServerConfig } from '@api/configs';
 import {
     CORSProvider,
+    ConnectionStoreProvider,
     StaticServeProvider,
     StaticServeProviderOptions,
 } from 'shared/providers';
@@ -22,6 +23,7 @@ export function bootstrap() {
         name: 'API Server',
         middlewares: [...middlewares],
         middlewareProviders: [
+            ConnectionStoreProvider,
             CORSProvider,
             provideMiddleware<StaticServeProviderOptions>(StaticServeProvider, {
                 pathToStaticContents: path.join(__dirname, '../public'),

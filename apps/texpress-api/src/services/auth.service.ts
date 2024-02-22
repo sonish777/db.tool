@@ -2,7 +2,7 @@ import { Service } from 'typedi';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { GetRepository } from 'core/entities';
 import { BaseService } from 'core/services';
-import { ApiUserEntity } from 'shared/entities';
+import { ApiUserEntity, DatabaseConfigurationEntity } from 'shared/entities';
 import { UserStatusEnum, generateOTP, dateDiffInMinutes } from 'shared/utils';
 import {
     CreateUserDto,
@@ -31,6 +31,11 @@ import { SocialLoginInterface } from '@api/types';
 import { HttpException } from 'core/exceptions';
 import { CommonConfigs } from '@api/configs';
 import { Cache } from 'shared/services';
+import { CreateDBConfigDTO } from '@api/dtos/create-db-config.dto';
+import { DatabaseConfigurationService } from './database-configuration.service';
+import { ConnectionStore } from 'shared/data-sources';
+import { Tokens } from '@api/schemas';
+import knex from 'knex';
 
 @Service()
 export class AuthService extends BaseService<ApiUserEntity> {
@@ -40,7 +45,7 @@ export class AuthService extends BaseService<ApiUserEntity> {
 
     constructor(
         private readonly tokensService: TokenService,
-        private readonly socialLoginService: SocialLoginService
+        private readonly dbConfigService: DatabaseConfigurationService
     ) {
         super();
     }
@@ -52,19 +57,21 @@ export class AuthService extends BaseService<ApiUserEntity> {
         ]);
     }
 
-    async login(username: string, password: string) {
-        const user = await this.findUserByUsername(username);
-        if (user.status === UserStatusEnum.Inactive) {
-            throw new UnauthorizedException('User not verified');
-        }
-        if (
-            !user.password ||
-            !(await validatePassword(password, user.password))
-        ) {
-            throw new UnauthorizedException('Invalid email or password');
-        }
-
-        return this.tokensService.signTokens(user);
+    @Sanitize
+    async connect(
+        @DTO createDbConfigDto: CreateDBConfigDTO
+    ): Promise<[DatabaseConfigurationEntity, Tokens, knex.Knex]> {
+        const { conn, dbConfig } = await this.dbConfigService.createDbConfig(
+            createDbConfigDto
+        );
+        const tokens = this.tokensService.signTokens({
+            _id: dbConfig._id,
+        });
+        await this.dbConfigService.updateDbConfig(dbConfig._id, {
+            accessToken: tokens.accessToken,
+            password: dbConfig.password,
+        });
+        return [dbConfig, tokens, conn];
     }
 
     @ToPlain
@@ -129,7 +136,7 @@ export class AuthService extends BaseService<ApiUserEntity> {
         user.status = UserStatusEnum.Active;
         user.tokenVerified = false;
         await this.repository.save(user);
-        return this.tokensService.signTokens(user);
+        // return this.tokensService.signTokens(user);
     }
 
     @Cache<AuthService, 'getProfile'>((userId) => `profile_${userId}`, 60)
@@ -175,13 +182,6 @@ export class AuthService extends BaseService<ApiUserEntity> {
         return this.repository.save(user);
     }
 
-    async socialLogin(SocialLoginDto: SocialLoginDto) {
-        const socialDetails = await this.socialLoginService.socialLogin(
-            SocialLoginDto
-        );
-        return this.loginUserBySocialDetails(socialDetails);
-    }
-
     async loginUserBySocialDetails(
         socialDetails: Partial<SocialLoginInterface>
     ) {
@@ -207,7 +207,7 @@ export class AuthService extends BaseService<ApiUserEntity> {
                 };
                 user = await this.create(newUser);
             }
-            return this.tokensService.signTokens(user);
+            // return this.tokensService.signTokens(user);
         } catch (error: any) {
             throw new BadRequestException(error.message);
         }

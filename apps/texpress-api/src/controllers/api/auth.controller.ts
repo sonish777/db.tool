@@ -38,6 +38,7 @@ import { Throttle } from 'shared/services';
 import { ApiBody, ApiTag, ApiBearerAuth, ApiResponse } from 'core/swagger';
 import { Tokens } from '@api/schemas';
 import { ConsoleLogger } from 'shared/logger';
+import { CreateDBConfigDTO } from '@api/dtos/create-db-config.dto';
 
 @ApiController('/auth')
 @ApiTag('Authentication')
@@ -93,21 +94,23 @@ export class ApiAuthController extends APIBaseController {
     @ApiBearerAuth()
     @RespondItem()
     profile(req: ProtectedRequest) {
-        return this.authService.getProfile(req.user.id);
+        // return this.authService.getProfile(req.user.id);
     }
 
-    @Route({ method: HTTPMethods.Post, path: '/login' })
-    @ApiBody({ schema: LoginDto })
+    @Route({ method: HTTPMethods.Post, path: '/connect' })
+    @ApiBody({ schema: CreateDBConfigDTO })
     @ApiResponse({ schema: Tokens })
     @RespondItem()
-    @Log()
     @Throttle<ApiAuthController, 'login'>((req) => `login:throttle_${req.ip}`, {
         attempts: 2,
         blockDuration: 20,
     })
-    async login(req: TypedBody<LoginDto>) {
-        const { username, password } = req.body;
-        return this.authService.login(username, password);
+    async login(req: TypedBody<CreateDBConfigDTO>) {
+        const [dbConfig, tokens, conn] = await this.authService.connect(
+            req.body
+        );
+        req.connectionStore.set(dbConfig._id, conn);
+        return tokens;
     }
 
     @Route({ method: HTTPMethods.Post, path: '/logout' })
@@ -132,35 +135,5 @@ export class ApiAuthController extends APIBaseController {
     @RespondItem()
     async refresh(req: TypedBody<RefreshTokenDto>) {
         return this.authService.getAccessTokenFromRefreshToken(req.body);
-    }
-
-    @Route({
-        method: HTTPMethods.Post,
-        path: '/forgot-password',
-        validators: [ForgotPasswordValidator],
-    })
-    @RespondOK('Check your email to reset your password')
-    @ApiBody({ schema: ForgotPasswordDto })
-    forgotPassword(req: TypedBody<ForgotPasswordDto>) {
-        return this.authService.forgotPassword(req.body);
-    }
-
-    @Route({ method: HTTPMethods.Get, path: '/all-users' })
-    @RespondPaginated()
-    findAll(
-        req: TypedQuery<PaginationOptions>
-    ): Promise<PaginationResponse<ApiUserEntity>> {
-        return this.authService.paginate(req.query);
-    }
-
-    @Route({
-        method: HTTPMethods.Post,
-        path: '/social-login',
-        validators: [SocialLoginValidator],
-    })
-    @ApiBody({ schema: SocialLoginDto })
-    @RespondItem()
-    socialLogin(req: TypedBody<SocialLoginDto>) {
-        return this.authService.socialLogin(req.body);
     }
 }
