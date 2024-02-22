@@ -39,9 +39,7 @@ yarn install
 
 > Texpress uses [config](https://www.npmjs.com/package/config) package for managing configurations
 
-
 4. Create env file `'.env'` and copy the contents from `'.env.example'` to the new file in the project root directory.
-
 
 5. Run migrations
 
@@ -70,7 +68,6 @@ yarn build:js
 ```
 
 > Note: Use `yarn watch:js` to compile in watch mode.
-
 
 8. Start the development server
 
