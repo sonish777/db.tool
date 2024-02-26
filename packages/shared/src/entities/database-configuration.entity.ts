@@ -9,16 +9,18 @@ import {
     CreateDateColumn,
     Entity,
     PrimaryColumn,
+    PrimaryGeneratedColumn,
     UpdateDateColumn,
 } from 'typeorm';
 import crypto from 'crypto';
 import config from 'config';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: 'database_configurations' })
 @SetRepository(postgresDataSource)
 export class DatabaseConfigurationEntity {
     @Column()
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     _id: string;
 
     @Column()
@@ -31,6 +33,7 @@ export class DatabaseConfigurationEntity {
     username: string;
 
     @Column()
+    @Exclude({ toPlainOnly: true })
     password: string;
 
     @Column()
@@ -42,7 +45,8 @@ export class DatabaseConfigurationEntity {
     createdAt: Date;
 
     @Column()
-    accessToken: string;
+    @Exclude({ toPlainOnly: true })
+    accessToken: string | null;
 
     @UpdateDateColumn({
         default: `now()`,
@@ -50,6 +54,7 @@ export class DatabaseConfigurationEntity {
     })
     updatedAt: Date;
 
+    @Exclude({ toPlainOnly: true })
     currentPassword: string;
 
     @AfterLoad()

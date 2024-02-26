@@ -4,7 +4,7 @@ import knex from 'knex';
 import { GetRepository } from 'core/entities';
 import { DatabaseConfigurationEntity } from 'shared/entities';
 import { Repository } from 'typeorm';
-import { NotFoundException } from 'shared/exceptions';
+import { BadRequestException, NotFoundException } from 'shared/exceptions';
 import { BaseService } from 'core/services';
 import crypto from 'crypto';
 import config from 'config';
@@ -15,18 +15,22 @@ export class DatabaseConfigurationService extends BaseService<DatabaseConfigurat
     readonly repository: Repository<DatabaseConfigurationEntity>;
 
     async testConnection(dbConfig: CreateDBConfigDTO) {
-        const conn = knex({
-            client: 'pg',
-            connection: {
-                host: dbConfig.host,
-                port: Number(dbConfig.port),
-                user: dbConfig.username,
-                password: dbConfig.password,
-                database: dbConfig.databaseName,
-            },
-        });
-        await conn.raw('SELECT 1');
-        return conn;
+        try {
+            const conn = knex({
+                client: 'pg',
+                connection: {
+                    host: dbConfig.host,
+                    port: Number(dbConfig.port),
+                    user: dbConfig.username,
+                    password: dbConfig.password,
+                    database: dbConfig.databaseName,
+                },
+            });
+            await conn.raw('SELECT 1');
+            return conn;
+        } catch (error: any) {
+            throw new BadRequestException(error.message);
+        }
     }
 
     generateDBIdentifier(dbConfig: CreateDBConfigDTO) {
