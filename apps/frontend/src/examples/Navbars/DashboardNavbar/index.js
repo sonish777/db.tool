@@ -34,7 +34,6 @@ import MDInput from 'components/MDInput';
 
 // Material Dashboard 2 React example components
 import Breadcrumbs from 'examples/Breadcrumbs';
-import NotificationItem from 'examples/Items/NotificationItem';
 
 // Custom styles for DashboardNavbar
 import {
@@ -52,7 +51,6 @@ function DashboardNavbar({ absolute, light, isMini }) {
     const [navbarType, setNavbarType] = useState();
     const [controller, dispatch] = useMaterialUIController();
     const { transparentNavbar, fixedNavbar, darkMode } = controller;
-    const [openMenu, setOpenMenu] = useState(false);
     const route = useLocation().pathname.split('/').slice(1);
 
     useEffect(() => {

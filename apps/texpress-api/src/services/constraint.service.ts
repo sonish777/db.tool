@@ -101,7 +101,7 @@ export class ConstraintService {
     ) {
         const paginationMetadata = getPaginationMetadata(searchDto);
 
-        let data: CheckConstraint[] = await conn
+        const data: CheckConstraint[] = await conn
             .select(
                 'tc.constraint_catalog',
                 'tc.constraint_schema',

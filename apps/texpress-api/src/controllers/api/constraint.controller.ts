@@ -12,8 +12,8 @@ import { CommonSearchQueryDto } from 'shared/dtos';
 @ApiController('/constraints')
 @ApiTag('Constraints')
 export class ConstraintController extends APIBaseController {
-    protected title: string = 'Constraints';
-    protected module: string = 'constraints';
+    protected title = 'Constraints';
+    protected module = 'constraints';
 
     constructor(private readonly service: ConstraintService) {
         super();
