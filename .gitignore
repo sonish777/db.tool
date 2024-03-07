@@ -18,4 +18,6 @@ yarn-error.log
 !**/public/uploads/admins
 !**/public/uploads/admins/default.jpg
 
+!apps/frontend/public/**
+
 .turbo

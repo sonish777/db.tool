@@ -8,6 +8,9 @@ interface DTOIndexTypeMap {
 }
 
 export const DTO: ParameterDecorator = (target, prop, paramIndex) => {
+    if (!prop) {
+        return;
+    }
     const dtoIndices: any[] =
         Reflect.getOwnMetadata(
             DTOMetadataKey.DTO_PARAMETER_INDICES,

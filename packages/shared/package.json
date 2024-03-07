@@ -15,6 +15,7 @@
     },
     "exports": {
         "./configs": "./dist/configs/index.js",
+        "./data-sources": "./dist/data-sources/index.js",
         "./connections": "./dist/connections/index.js",
         "./dtos": "./dist/dtos/index.js",
         "./entities": "./dist/entities/index.js",

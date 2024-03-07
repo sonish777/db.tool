@@ -9,7 +9,7 @@ import {
     SelectQueryBuilder,
 } from 'typeorm';
 
-export abstract class BaseService<K extends BaseEntity> {
+export abstract class BaseService<K extends Partial<BaseEntity>> {
     protected abstract readonly repository: Repository<K>;
     protected readonly filterColumns: string[] = [];
     protected readonly resource: string = 'Resource';

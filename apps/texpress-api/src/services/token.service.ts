@@ -13,6 +13,7 @@ import {
 import { AuthService } from './auth.service';
 import { CommonConfigs } from '@api/configs';
 import { Tokens } from '@api/schemas';
+import { CreateDBConfigDTO } from '@api/dtos/create-db-config.dto';
 
 interface IVerifiedToken {
     _id: string;
@@ -28,21 +29,15 @@ export class TokenService extends BaseService<TokenEntity> {
     @Inject(() => AuthService)
     private readonly authService: AuthService;
 
-    async signTokens(user: ApiUserEntity): Promise<Tokens> {
-        const payload = { _id: user._id };
+    signTokens(payload: Record<string, string>): Tokens {
         const accessToken = jwt.sign(payload, CommonConfigs.Jwt.AccessSecret, {
             expiresIn: CommonConfigs.Jwt.AccessExpiresIn,
-        });
-        const token = await this.create({
-            userId: user.id,
         });
         const refreshToken = jwt.sign(
             payload,
             CommonConfigs.Jwt.RefreshSecret,
             {
                 expiresIn: CommonConfigs.Jwt.RefreshExpiresIn,
-                jwtid: String(token.id),
-                subject: user._id,
             }
         );
         return { accessToken, refreshToken };
