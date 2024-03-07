@@ -12,15 +12,31 @@ import Footer from 'examples/Footer';
 
 // Data
 import { useEffect, useState } from 'react';
-import { useReactTable, getCoreRowModel } from '@tanstack/react-table';
+import {
+    useReactTable,
+    getCoreRowModel,
+    createColumnHelper,
+} from '@tanstack/react-table';
 import { axiosInstance } from 'utils';
 import { getPaginationURLParams } from 'utils';
 import { TablePagination } from 'components/TablePagination';
 import { CustomTable } from 'components/CustomTable';
+import { Link } from 'react-router-dom';
 
 function Tables() {
+    const columnHelper = createColumnHelper();
     const columns = [
-        { header: 'Table Name', accessorKey: 'table_name' },
+        columnHelper.accessor('table_name', {
+            header: 'Table Name',
+            cell: ({ getValue }) => (
+                <Link
+                    style={{ color: 'blueviolet' }}
+                    to={'/tables/' + getValue()}
+                >
+                    {getValue()}
+                </Link>
+            ),
+        }),
         { header: 'Table Type', accessorKey: 'table_type' },
         { header: 'Total Rows', accessorKey: 'n_live_tup' },
         { header: 'Total Tuples Inserted', accessorKey: 'n_tup_ins' },

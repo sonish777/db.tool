@@ -116,7 +116,7 @@ export default function App() {
                                 : brandWhite
                         }
                         brandName="Database Tool"
-                        routes={routes}
+                        routes={routes.filter((r) => r.sideNavEl)}
                         onMouseEnter={handleOnMouseEnter}
                         onMouseLeave={handleOnMouseLeave}
                     />

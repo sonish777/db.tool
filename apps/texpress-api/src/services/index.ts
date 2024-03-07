@@ -4,3 +4,4 @@ export * from './token.service';
 export * from './database-configuration.service';
 export * from './table.service';
 export * from './column.service';
+export * from './constraint.service';

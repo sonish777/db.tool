@@ -44,7 +44,7 @@ function Sidenav({ color, brand, brandName, routes, ...rest }) {
         sidenavColor,
     } = controller;
     const location = useLocation();
-    const collapseName = location.pathname.replace('/', '');
+    const collapseName = location.pathname.replace('/', '')?.split('/')?.[0];
 
     let textColor = 'white';
 

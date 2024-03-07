@@ -1,7 +1,8 @@
 import { TableQueryDTO } from '@api/dtos/table-query.dto';
 import { TableTypes } from '@api/types';
 import knex from 'knex';
-import { TableStats } from 'shared/interfaces';
+import { CommonSearchQueryDto } from 'shared/dtos';
+import { TableIndexes, TableStats } from 'shared/interfaces';
 import { getPaginationMetadata, getPaginationResponse } from 'shared/utils';
 import { Service } from 'typedi';
 
@@ -57,6 +58,60 @@ export class TableService {
         return getPaginationResponse(data, {
             ...paginationMetadata,
             total: total,
+        });
+    }
+
+    async paginateTableIndexList(
+        conn: knex.Knex,
+        tableName: string,
+        searchDto: CommonSearchQueryDto
+    ) {
+        const paginationMetadata = getPaginationMetadata(searchDto);
+        const data: TableIndexes[] = await conn
+            .select(
+                'i.tablename',
+                'i.indexname',
+                'am.amname as indextype',
+                conn.raw(
+                    "array_to_string(array_agg(attr.attname), ', ') as columns"
+                ),
+                'i.indexdef',
+                conn.raw(`CASE 
+                    WHEN idx.indisprimary THEN 'Primary Key'
+                    WHEN idx.indisunique THEN 'Unique Key'
+                    ELSE 'Performance' END as index_category`)
+            )
+            .from('pg_class as c')
+            .join('pg_namespace as n', 'n.oid', 'c.relnamespace')
+            .join('pg_index as idx', 'idx.indexrelid', 'c.oid')
+            .join('pg_am as am', 'am.oid', 'c.relam')
+            .join('pg_class as tbl', 'idx.indrelid', 'tbl.oid')
+            .join('pg_attribute as attr', function () {
+                this.on('attr.attnum', conn.raw('ANY(idx.indkey)')).andOn(
+                    'attr.attrelid',
+                    'tbl.oid'
+                );
+            })
+            .join('pg_indexes as i', 'i.indexname', 'c.relname')
+            .where('n.nspname', 'public')
+            .andWhere('i.tablename', tableName)
+            .groupBy(
+                'i.tablename',
+                'i.indexname',
+                'am.amname',
+                'i.indexdef',
+                'idx.indisprimary',
+                'idx.indisunique'
+            )
+            .limit(paginationMetadata.take)
+            .offset(paginationMetadata.skip);
+
+        const countQuery = await conn('pg_indexes')
+            .count('indexname as total')
+            .where('tablename', tableName);
+        return getPaginationResponse(data, {
+            ...paginationMetadata,
+            total: Number(countQuery?.[0]?.total || 0),
         });
     }
 }

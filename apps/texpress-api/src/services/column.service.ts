@@ -1,5 +1,6 @@
 import { ColumnByTableQueryDTO } from '@api/dtos';
 import knex from 'knex';
+import { CommonSearchQueryDto } from 'shared/dtos';
 import { Column } from 'shared/interfaces';
 import { getPaginationMetadata, getPaginationResponse } from 'shared/utils';
 import { Service } from 'typedi';
@@ -69,6 +70,53 @@ export class ColumnService {
             .count('* as total')
             .where('c.table_name', searchDto.tableName);
 
+        return getPaginationResponse(data, {
+            ...paginationMetadata,
+            total: Number(countQuery?.[0]?.total || 0),
+        });
+    }
+
+    async paginateColumnsList(
+        conn: knex.Knex,
+        searchDto: CommonSearchQueryDto
+    ) {
+        const paginationMetadata = getPaginationMetadata(searchDto);
+
+        const data: Column[] = await conn
+            .select(
+                'c.table_name',
+                'c.column_name',
+                'c.data_type',
+                'c.character_maximum_length',
+                'c.is_nullable',
+                'c.column_default',
+                'tc.constraint_type'
+            )
+            .distinct()
+            .from('information_schema.columns as c')
+            .leftJoin(
+                'information_schema.key_column_usage as kcu',
+                function () {
+                    this.on('c.column_name', '=', 'kcu.column_name').andOn(
+                        'c.table_name',
+                        '=',
+                        'kcu.table_name'
+                    );
+                }
+            )
+            .leftJoin(
+                'information_schema.table_constraints as tc',
+                'tc.constraint_name',
+                'kcu.constraint_name'
+            )
+            .where('c.table_schema', 'public')
+            .orderBy('c.table_name', 'asc')
+            .orderBy('tc.constraint_type', 'asc', 'last')
+            .limit(paginationMetadata.take)
+            .offset(paginationMetadata.skip);
+        const countQuery = await conn('information_schema.columns AS c')
+            .count('* as total')
+            .where('c.table_schema', 'public');
         return getPaginationResponse(data, {
             ...paginationMetadata,
             total: Number(countQuery?.[0]?.total || 0),

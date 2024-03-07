@@ -22,3 +22,11 @@ export interface TableStats {
     n_live_tup: number;
     total?: number;
 }
+
+export interface TableIndexes {
+    indexname: string;
+    indextype: string;
+    columns: string;
+    indexdef: string;
+    index_category: string;
+}

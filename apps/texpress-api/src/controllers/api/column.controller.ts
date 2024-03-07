@@ -19,6 +19,18 @@ export class ColumnController extends APIBaseController {
         super();
     }
 
+    @APIProtectedRoute({
+        method: HTTPMethods.Get,
+        path: '/',
+    })
+    @ApiBearerAuth()
+    @RespondPaginated()
+    async get(req: TypedQuery<CommonSearchQueryDto>) {
+        return this.service.paginateColumnsList(req.conn, {
+            ...req.query,
+        });
+    }
+
     @ApiParameter({ in: 'query', schema: CommonSearchQueryDto })
     @ApiParameter({
         in: 'path',

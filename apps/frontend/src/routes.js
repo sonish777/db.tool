@@ -1,15 +1,15 @@
 // Material Dashboard 2 React layouts
 import Dashboard from 'layouts/dashboard';
 import Tables from 'layouts/tables';
-import Billing from 'layouts/billing';
 import RTL from 'layouts/rtl';
-import Notifications from 'layouts/notifications';
 import Profile from 'layouts/profile';
 import SignIn from 'layouts/authentication/sign-in';
-import SignUp from 'layouts/authentication/sign-up';
 
 // @mui icons
 import Icon from '@mui/material/Icon';
+import Columns from 'layouts/columns';
+import TableDetails from 'layouts/tables/table-details';
+import Constraints from 'layouts/constraints';
 
 const routes = [
     {
@@ -17,6 +17,7 @@ const routes = [
         name: 'Dashboard',
         key: 'dashboard',
         icon: <Icon fontSize="small">dashboard</Icon>,
+        sideNavEl: true,
         route: '/dashboard',
         isPrivate: true,
         component: <Dashboard />,
@@ -26,6 +27,7 @@ const routes = [
         name: 'Tables',
         key: 'tables',
         icon: <Icon fontSize="small">table_view</Icon>,
+        sideNavEl: true,
         route: '/tables',
         isPrivate: true,
         component: <Tables />,
@@ -35,24 +37,37 @@ const routes = [
         name: 'Columns',
         key: 'columns',
         icon: <Icon fontSize="small">receipt_long</Icon>,
-        route: '/billing',
+        sideNavEl: true,
+        route: '/columns',
         isPrivate: true,
-        component: <Billing />,
+        component: <Columns />,
+    },
+    {
+        type: 'collapse',
+        name: 'Table Columns',
+        key: 'table-columns',
+        icon: null,
+        sideNavEl: false,
+        route: '/tables/:tableName',
+        isPrivate: true,
+        component: <TableDetails />,
     },
     {
         type: 'collapse',
         name: 'Constraints',
         key: 'constraints',
         icon: <Icon fontSize="small">format_textdirection_r_to_l</Icon>,
-        route: '/rtl',
+        sideNavEl: true,
+        route: '/constraints',
         isPrivate: true,
-        component: <RTL />,
+        component: <Constraints />,
     },
     {
         type: 'collapse',
         name: 'Profile',
         key: 'profile',
         icon: <Icon fontSize="small">person</Icon>,
+        sideNavEl: true,
         route: '/profile',
         isPrivate: true,
         component: <Profile />,
@@ -62,6 +77,7 @@ const routes = [
         name: 'Sign In',
         key: 'sign-in',
         icon: <Icon fontSize="small">login</Icon>,
+        sideNavEl: true,
         route: '/authentication/connect',
         isPrivate: false,
         component: <SignIn />,
