@@ -46,7 +46,7 @@ export class DatabaseConfigurationEntity {
 
     @Column()
     @Exclude({ toPlainOnly: true })
-    accessToken: string | null;
+    accessToken: string;
 
     @UpdateDateColumn({
         default: `now()`,
